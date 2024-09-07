@@ -1,5 +1,8 @@
 # https://towardsdatascience.com/developing-web-based-real-time-video-audio-processing-apps-quickly-with-streamlit-7c7bcd0bc5a8
 
+import os; os.chdir("/workspaces/fall_detection_ui/src/")
+import sys; sys.path.append("/workspaces/fall_detection_ui/src/")
+
 import streamlit as st
 from streamlit_webrtc import WebRtcMode, webrtc_streamer
 import av
