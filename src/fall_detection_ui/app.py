@@ -38,5 +38,5 @@ webrtc_streamer(
     rtc_configuration={"iceServers": get_ice_servers()},
     video_frame_callback=callback,
     media_stream_constraints={"video": True, "audio": False},
-    async_processing=True,
+    async_processing=False,
 )
