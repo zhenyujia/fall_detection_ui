@@ -1,9 +1,10 @@
 # https://towardsdatascience.com/developing-web-based-real-time-video-audio-processing-apps-quickly-with-streamlit-7c7bcd0bc5a8
 
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer
+from streamlit_webrtc import WebRtcMode, webrtc_streamer
 import av
 import cv2
+from utils.turn import get_ice_servers
 
 st.title("My first Streamlit app")
 st.write("Hello, world")
@@ -20,10 +21,19 @@ def callback(frame):
     return av.VideoFrame.from_ndarray(img, format="bgr24")
 
 
+# webrtc_streamer(
+#     key="example",
+#     video_frame_callback=callback,
+#     rtc_configuration={  # Add this line
+#         "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+#     }
+# )
+
 webrtc_streamer(
     key="example",
+    mode=WebRtcMode.SENDRECV,
+    rtc_configuration={"iceServers": get_ice_servers()},
     video_frame_callback=callback,
-    rtc_configuration={  # Add this line
-        "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
-    }
+    media_stream_constraints={"video": True, "audio": False},
+    async_processing=True,
 )
