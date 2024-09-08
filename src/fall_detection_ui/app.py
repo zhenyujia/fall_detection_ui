@@ -1,13 +1,26 @@
 # https://towardsdatascience.com/developing-web-based-real-time-video-audio-processing-apps-quickly-with-streamlit-7c7bcd0bc5a8
 
-import os; os.chdir("/mount/src/fall_detection_ui/src/")
-import sys; sys.path.append("/mount/src/fall_detection_ui/src/")
+import os
+import sys
 
 import streamlit as st
 from streamlit_webrtc import WebRtcMode, webrtc_streamer
 import av
 import cv2
 from utils.turn import get_ice_servers
+import logging
+
+streamlit_cloud_root = "/mount/src/fall_detection_ui/src/"
+if os.path.exists(streamlit_cloud_root):
+    os.chdir(streamlit_cloud_root)
+    sys.path.append(streamlit_cloud_root)
+
+st_webrtc_logger = logging.getLogger("streamlit_webrtc")
+st_webrtc_logger.setLevel(logging.WARNING)
+
+aioice_logger = logging.getLogger("aioice")
+aioice_logger.setLevel(logging.WARNING)
+
 
 st.title("My first Streamlit app")
 st.write("Hello, world")
