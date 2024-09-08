@@ -8,6 +8,7 @@ from streamlit_webrtc import WebRtcMode, webrtc_streamer
 import av
 import cv2
 import logging
+from loguru import logger
 
 
 streamlit_cloud_root = "/mount/src/fall_detection_ui/src/"
@@ -24,7 +25,6 @@ st_webrtc_logger.setLevel(logging.WARNING)
 aioice_logger = logging.getLogger("aioice")
 aioice_logger.setLevel(logging.WARNING)
 
-
 st.title("My first Streamlit app")
 st.write("Hello, world")
 
@@ -33,6 +33,7 @@ threshold2 = st.slider("Threshold2", min_value=0, max_value=1000, step=1, value=
 
 
 def callback(frame):
+    logger.debug("got a frame!")
     img = frame.to_ndarray(format="bgr24")
 
     img = cv2.cvtColor(cv2.Canny(img, threshold1, threshold2), cv2.COLOR_GRAY2BGR)

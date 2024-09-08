@@ -12,6 +12,7 @@ streamlit = "^1.38.0"
 streamlit-webrtc = "^0.47.7"
 opencv-python-headless = "^4.10.0.84"
 twilio = "^9.3.0"
+loguru = "^0.7.2"
 
 
 [build-system]
