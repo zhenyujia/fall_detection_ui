@@ -1199,6 +1199,20 @@ files = [
 ]
 
 [[package]]
+name = "pafy"
+version = "0.5.5"
+description = "Retrieve YouTube content and metadata"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pafy-0.5.5-py2.py3-none-any.whl", hash = "sha256:769e35aa6988686d47fa2ab235d15c9952c7873c470f6a6b05cf6bcd93e62515"},
+    {file = "pafy-0.5.5.tar.gz", hash = "sha256:364f1d1312c89582d97dc7225cf6858cde27cb11dfd64a9c2bab1a2f32133b1e"},
+]
+
+[package.extras]
+youtube-dl-backend = ["youtube-dl"]
+
+[[package]]
 name = "pandas"
 version = "2.2.2"
 description = "Powerful data structures for data analysis, time series, and statistics"
@@ -1367,6 +1381,17 @@ mic = ["olefile"]
 tests = ["check-manifest", "coverage", "defusedxml", "markdown2", "olefile", "packaging", "pyroma", "pytest", "pytest-cov", "pytest-timeout"]
 typing = ["typing-extensions"]
 xmp = ["defusedxml"]
+
+[[package]]
+name = "pip"
+version = "24.2"
+description = "The PyPA recommended tool for installing Python packages."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pip-24.2-py3-none-any.whl", hash = "sha256:2cd581cf58ab7fcfca4ce8efa6dcacd0de5bf8d0a3eb9ec927e07405f4d9e2a2"},
+    {file = "pip-24.2.tar.gz", hash = "sha256:5b5e490b5e9cb275c879595064adce9ebd31b854e3e803740b72f9ccf34a45b8"},
+]
 
 [[package]]
 name = "protobuf"
@@ -1586,6 +1611,28 @@ files = [
 
 [package.dependencies]
 six = ">=1.5"
+
+[[package]]
+name = "pytube"
+version = "15.0.0"
+description = "Python 3 library for downloading YouTube Videos."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pytube-15.0.0-py3-none-any.whl", hash = "sha256:07b9904749e213485780d7eb606e5e5b8e4341aa4dccf699160876da00e12d78"},
+    {file = "pytube-15.0.0.tar.gz", hash = "sha256:076052efe76f390dfa24b1194ff821d4e86c17d41cb5562f3a276a8bcbfc9d1d"},
+]
+
+[[package]]
+name = "pytubefix"
+version = "6.16.2"
+description = "Python3 library for downloading YouTube Videos."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pytubefix-6.16.2-py3-none-any.whl", hash = "sha256:8d2f94845fba9ca06f58879a05370e19e95a3641a28139fb00eedf33405dfb3c"},
+    {file = "pytubefix-6.16.2.tar.gz", hash = "sha256:36c9daec3634c732d1e2048770979404549b7108cec80166e23e145cb8b82107"},
+]
 
 [[package]]
 name = "pytz"
@@ -2105,7 +2152,18 @@ files = [
 idna = ">=2.0"
 multidict = ">=4.0"
 
+[[package]]
+name = "youtube-dl"
+version = "2021.12.17"
+description = "YouTube video downloader"
+optional = false
+python-versions = "*"
+files = [
+    {file = "youtube_dl-2021.12.17-py2.py3-none-any.whl", hash = "sha256:f1336d5de68647e0364a47b3c0712578e59ec76f02048ff5c50ef1c69d79cd55"},
+    {file = "youtube_dl-2021.12.17.tar.gz", hash = "sha256:bc59e86c5d15d887ac590454511f08ce2c47698d5a82c27bfe27b5d814bbaed2"},
+]
+
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.10"
-content-hash = "3770b37ca1b79b7ac6159142d54c47518e95b10826e292f35b2349b14b009e83"
+python-versions = ">=3.10,<3.13"
+content-hash = "235005b217b7bb391855643b365236a7e832563abf452b5993fe3c8d686ef262"
