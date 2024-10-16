@@ -4,7 +4,7 @@ import os
 import sys
 
 import streamlit as st
-from streamlit_webrtc import WebRtcMode, webrtc_streamer
+from streamlit_webrtc import webrtc_streamer
 import av
 import cv2
 import logging
@@ -15,9 +15,6 @@ streamlit_cloud_root = "/mount/src/fall_detection_ui/src/"
 if os.path.exists(streamlit_cloud_root):
     os.chdir(streamlit_cloud_root)
     sys.path.append(streamlit_cloud_root)
-
-from utils.turn import get_ice_servers
-
 
 st_webrtc_logger = logging.getLogger("streamlit_webrtc")
 st_webrtc_logger.setLevel(logging.WARNING)
