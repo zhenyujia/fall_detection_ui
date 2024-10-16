@@ -6,14 +6,16 @@ import os
 import threading
 import cv2
 from loguru import logger
+import time
 from concurrent.futures import ThreadPoolExecutor
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 
-from tensorflow.python.ops.signal.shape_ops import frame
+#from tensorflow.python.ops.signal.shape_ops import frame
 
-from fall_detection_ui.model.FallDetection import fall_detector  # Import the fall_detector function
+#from fall_detection_ui.model.FallDetection import fall_detector  # Import the fall_detector function
 from fall_detection_ui.utils.FrameFetcher import FrameFetcher
 from fall_detection_ui.utils.video_utils import display_frames
+from fall_detection_ui.model.FallDetection import FallDetector
 
 
 @st.cache_data  # 👈 Add the caching decorator
@@ -26,7 +28,8 @@ def get_thread_executor():
 
 # Get the current working directory (this is the project folder)
 project_directory = os.getcwd()
-video_directory = os.path.join(project_directory, "..", "videos")
+logger.debug("project_directory: {dir}".format(dir=project_directory))
+video_directory = os.path.join(project_directory, "videos")
 
 # Define the supported video file extensions
 supported_extensions = ('.mp4', '.avi', '.mov')
@@ -83,6 +86,7 @@ if video_files:
 
         cap = cv2.VideoCapture(video_path)
         fps = cap.get(cv2.CAP_PROP_FPS)
+        logger.info("Video fps: {fps}".format(fps=fps))
         cap.release()
 
         # Display the video in full-screen
@@ -91,9 +95,12 @@ if video_files:
         #1. start a thread to fetch 24 frames and put into st.session.
         #2  start another thread to run model and set result to st.session
         frame_fetcher=load_frame_fetcher(video_path)
-        condition = threading.Condition()
+        condition_fetch = threading.Condition()
+        condition_model = threading.Condition()
 
         frames_to_display = []
+        frames_model_input = []
+        model_output = []
 
         logger.debug("main thread Id: {id}".format(id=threading.get_ident()))
         #loop = asyncio.new_event_loop()
@@ -101,29 +108,67 @@ if video_files:
 
         #executor = get_thread_executor()
         #asyncio.get_event_loop().run_in_executor(executor, frame_fetcher.run_fetch(frames_to_display, condition))
-        thread = threading.Thread(target=frame_fetcher.run_fetch, args=(frames_to_display, condition))
+
+        step = 2
+        thread_fetcher = threading.Thread(target=frame_fetcher.run_fetch, args=(frames_to_display, condition_fetch, step))
         #add_script_run_ctx(thread)
-        thread.start()
+        thread_fetcher.start()
 
-        with st.empty():
-            with condition:
-                while True:
-                    while not frames_to_display:
-                        logger.debug("waiting for frames to display...")
-                        condition.wait()
+        fall_detector = FallDetector()
+        thread_model = threading.Thread(target=fall_detector.run_predict, args=(frames_model_input,model_output,condition_model))
+        #add_script_run_ctx(thread)
+        thread_model.start()
 
-                    logger.debug("done waiting. start to display.")
-                    display_frames(frames_to_display,fps)
-                    frames_to_display.clear()
-                    condition.notify()
+        video_placeholder = st.empty()
+        prediction_placeholder = st.empty()
 
+        while True:
+            with condition_fetch:
+                while not frames_to_display:
+                    start_wait_time = time.time()
+                    #logger.debug("waiting for frames to display...")
+                    condition_fetch.wait()
+
+                wait_time = time.time() - start_wait_time
+                logger.debug("received frames to display after {t} secs".format(t=wait_time))
+
+                # once frames are received, give a copy to the model and let model to start to process
+                with condition_model:
+                    while frames_model_input:
+                        start_wait_time = time.time()
+                        logger.debug("waiting for model to take input frames...")
+                        condition_model.wait()
+
+                    wait_time = time.time() - start_wait_time
+                    logger.debug("model took input after {t} secs".format(t=wait_time))
+                    frames_model_input.extend(frames_to_display.copy())
+                    condition_model.notify()  # let model to start to process
+
+                # now it's time to display the video
+                start_time=time.time()
+                display_frames(video_placeholder, frames_to_display,fps, step)
+                frames_to_display.clear()
+                condition_fetch.notify()
+                time_took = time.time() - start_time
+                logger.debug("done displaying. Time spent: {t} secs".format(t=time_took))
+
+                # display prediction result
+                with condition_model:
+                    while not model_output:
+                        condition_model.wait()
+                        logger.debug("waiting for model prediction...")
+
+                    detection_result = model_output[0]
+                    model_output.clear()
+                    prediction_placeholder.markdown(
+                            f'<div class="overlay-content"><h2>Fall Detection Result: {detection_result}</h2></div>',
+                            unsafe_allow_html=True)
 
 
 
         # Display fall detection result as an overlay on the video
-        detection_result = fall_detector(video_path)
-        st.markdown(f'<div class="overlay-content"><h2>Fall Detection Result: {detection_result}</h2></div>',
-                    unsafe_allow_html=True)
+        #detection_result = fall_detector(video_path)
+
 
     st.markdown('</div>', unsafe_allow_html=True)
 

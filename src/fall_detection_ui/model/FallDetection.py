@@ -1,10 +1,6 @@
 import time
 
 
-def fall_detector(video_path):
-    time.sleep(1)
-    return True
-
 import tkinter as tk
 from tkinter import messagebox, filedialog
 import cv2
@@ -14,9 +10,10 @@ import time
 import tensorflow as tf
 import numpy as np
 import threading
+from loguru import logger
 
 
-class VideoDisplayObject:
+class FallDetector:
 
     def __init__(self):
         self.root = tk.Tk()
@@ -28,127 +25,33 @@ class VideoDisplayObject:
         self.model_input_queue = []
         self.display_queue = []
         self.model_output_queue = []
-        self.model = tf.keras.models.load_model('fall-detection_v2.h5')
 
+        working_directory = os.getcwd()
+        model_path = os.path.join(working_directory, "model", 'LRCN_FAIL_Date_Time_2024_08_20__00_12_41__Loss_0.6136224865913391__Accuracy_0.8586956262588501.h5')
+        self.model = tf.keras.models.load_model(model_path)
 
-    def get_24_frames(self, start_index):
-        video_file = self.selected_file
-
-        if not os.path.isfile(video_file):
-            messagebox.showerror("File Error", "The file does not exist")
-            return []
-
-        cap = cv2.VideoCapture(video_file)
-        fps = cap.get(cv2.CAP_PROP_FPS) or 30
-
-        if not cap.isOpened():
-            messagebox.showerror("File Error", "Failed to open the video file")
-            return []
-
-        frames = []
-        next_index = start_index
-        total_frame = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-
-        if total_frame < start_index:
-            return []
-        for index in range(start_index, min(start_index + 24, total_frame)):
-            cap.set(cv2.CAP_PROP_POS_FRAMES, index)
-
-            ret, frame = cap.read()
-            frames.append(frame)
-            next_index += 1
-
-        cap.release()
-        return frames, next_index, fps
-
-
-    def async_get_frames(self):
-        start_index = 0
-
+    def run_predict(self, model_input_queue, predict_output_queue, cv: threading.Condition):
         while True:
-            frame_list, start_index, fps = self.get_24_frames(start_index)
-            print(f'retreiving frames {len(frame_list)}')
+            with cv:
+                while not model_input_queue:
+                    start_time = time.time()
+                    logger.debug("waiting for model input...")
+                    cv.wait()
 
-            if not frame_list:
-                break
+                time_took = time.time() - start_time
+                logger.debug("Received module input after waiting for {t} secs".format(t=time_took))
 
-            while self.display_queue:
-                time.sleep(.4)
-                print("sleeping .4 seconds async_get_frames")
-
-            self.display_queue = frame_list.copy()
-            print("saved to display_queue")
-
-
-    def display_frames(self, frames, fps):
-        delay = 1 / fps
-
-        for frame in frames:
-            start_time = time.time()
-
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame = Image.fromarray(frame)
-            frame = ImageTk.PhotoImage(frame)
-
-            self.video_label.config(image=frame)
-            self.video_label.image = frame
-
-            self.root.update_idletasks()
-            self.root.update()
-
-            time_elapsed = time.time() - start_time
-            time_to_wait = delay - time_elapsed
-            if time_to_wait > 0:
-                time.sleep(delay)
-
-
-    def async_analyze_frames(self):
-        while True:
-            if self.model_input_queue:
-                print("model received data ", len(self.model_input_queue))
+                start_time = time.time()
                 frames_list = []
-
-                for f in self.model_input_queue:
+                for f in model_input_queue:
                     resized_frame = cv2.resize(f, (124, 124))
                     frames_list.append(resized_frame)
-
-                self.model_input_queue.clear()
-
-                predicted_label_probabilities = self.model.predict(np.expand_dims(frames_list, axis=0))[0]
-
-                if predicted_label_probabilities > .7:
-                    predicted_label = 1
-                else:
-                    predicted_label = 0
-
-                predicted_class_name = ["nofall", "fall"][predicted_label]
-
-                print(predicted_class_name, predicted_label_probabilities, int(predicted_label))
-
-                while self.model_output_queue:
-                    print("model waiting .3")
-                    time.sleep(.3)
-
-                self.model_output_queue.append(int(predicted_label))
-
-            else:
-                time.sleep(.3)
-                print("analysis sleeping .3")
-
-
-    def start_video(self):
-
-        if self.selected_file is None:
-            messagebox.showwarning("Input Error", "Please select a video file first.")
-            return
-
-        x = threading.Thread(target=self.async_analyze_frames)
-        y = threading.Thread(target=self.async_get_frames)
-
-        x.start()
-        y.start()
-
-        self.play_video()
+                prob = self.model.predict(np.expand_dims(frames_list, axis=0))[0]
+                predict_output_queue.append(prob)
+                model_input_queue.clear()
+                time_took = time.time() - start_time
+                logger.debug("Prediction done. It took {t} secs".format(t=time_took))
+                cv.notify()
 
 
     def play_video(self):

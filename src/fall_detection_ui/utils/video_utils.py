@@ -27,8 +27,8 @@ def download(youtube_video_url, output_directory):
     ys.download()
 
 
-def display_frames(frames, fps):
-    delay = 1 / fps
+def display_frames(place_holder, frames, fps, step):
+    delay = 1 * step / fps   # if we use say 2 as step, then we take 1/2 frames within the same time window, we need to play twice slower
 
     for frame in frames:
         start_time = time.time()
@@ -43,12 +43,13 @@ def display_frames(frames, fps):
         # self.root.update_idletasks()
         # self.root.update()
 
-        st.image(frame)
+        place_holder.image(frame)
 
         time_elapsed = time.time() - start_time
-        time_to_wait = delay - time_elapsed
+        time_to_wait = delay - time_elapsed - 0.01
         if time_to_wait > 0:
             time.sleep(delay)
+            #logger.debug("sleep for {t} secs".format(t=time_to_wait))
 
 if __name__ == "__main__":
 

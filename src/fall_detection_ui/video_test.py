@@ -52,11 +52,13 @@ def callback_test(frame):
 #     }
 # )
 
-webrtc_streamer(
-    key="example",
-    mode=WebRtcMode.SENDRECV,
-    rtc_configuration={"iceServers": get_ice_servers()},
-    video_frame_callback=callback_test,
-    media_stream_constraints={"video": True, "audio": False},
-    async_processing=False,
-)
+# webrtc_streamer(
+#     key="example",
+#     mode=WebRtcMode.SENDRECV,
+#     rtc_configuration={"iceServers": get_ice_servers()},
+#     video_frame_callback=callback_test,
+#     media_stream_constraints={"video": True, "audio": False},
+#     async_processing=False,
+# )
+
+webrtc_streamer(key="example", video_frame_callback=callback)

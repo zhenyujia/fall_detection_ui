@@ -7,9 +7,9 @@ readme = "README.md"
 packages = [{include = "fall_detection_ui", from = "src"}]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
-streamlit = "^1.38.0"
-streamlit-webrtc = "^0.47.7"
+python = ">=3.10,<3.11"
+streamlit = "^1.39.0"
+streamlit-webrtc = "^0.47.9"
 opencv-python-headless = "^4.10.0.84"
 twilio = "^9.3.0"
 loguru = "^0.7.2"
